@@ -74,7 +74,6 @@ def action():
     results += "<th>開課時段</th>"
     results += "<th>修課人數上限</th>"
     
-    
     for t in cursor.fetchall():
         results += "<tr>"
         for i in t[:8]:
@@ -203,7 +202,6 @@ def register():
         results += "</form>"
         results += "</tr>"
         return results+"選課失敗"+"Error: {}".format(e)
-    
 @app.route('/delete', methods=['POST'])
 def delete():
     student_id = request.form.get("student_id")
@@ -222,10 +220,50 @@ def delete():
         cursor = conn.cursor()
 
         # Check if the student is enrolled in the course
+                                                        
+        query2 = "SELECT SUM(course_credits) as total_credits FROM enrollments JOIN course ON enrollments.course_id = course.course_id WHERE student_id = '{}';".format(student_id)
         cursor = conn.cursor()
-        cursor.callproc('delete_course', (student_id, course_id))
+        cursor.execute(query2)
+        conn.commit()
+        records =cursor.fetchall()[0][0]
+        query="SELECT compulsory FROM course WHERE course_id= '{}';".format(course_id)
+        cursor.execute(query)
+        conn.commit()
+        compulsory1=cursor.fetchall()[0][0]
+
+
+        query="SELECT Course_Credits FROM course WHERE course_id= '{}';".format(course_id)
+        cursor.execute(query)
+        conn.commit()
+        Course_Credits=cursor.fetchall()[0][0]
+
+        print(compulsory1)
+        if(compulsory1=="必修"):
+            results =""
+            results += "<form method='post' action='/action'>"
+            results += "<td><button type='submit' name='my_head' value='{}'>back</button></td>".format(student_id)
+            results += "</form>"
+            results += "</tr>"
+            return results+"退選失敗:必修"
+        if(records-Course_Credits<9):
+            results =""
+            results += "<form method='post' action='/action'>"
+            results += "<td><button type='submit' name='my_head' value='{}'>back</button></td>".format(student_id)
+            results += "</form>"
+            results += "</tr>"
+            return results+"退選失敗:總學分<9"
+        query = "DELETE FROM enrollments WHERE course_id IN (SELECT course_id FROM course WHERE compulsory = '選修') AND student_id='{}' AND course_id ='{}' AND {}>=9;".format(student_id ,course_id,records )
+        cursor.execute(query)
         conn.commit()
 
+        
+        
+    
         return results+"DELETE successful"
     except MySQLdb.Error as e:
-        return "Error: {}".format(e)
+        results =""
+        results += "<form method='post' action='/action'>"
+        results += "<td><button type='submit' name='my_head' value='{}'>back</button></td>".format(student_id)
+        results += "</form>"
+        results += "</tr>"
+        return results+"退選失敗"+"Error: {}".format(e)
