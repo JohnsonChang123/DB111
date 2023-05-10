@@ -1,7 +1,9 @@
 # DB111
 使用python flask mysql xmapp 實現的學生選課系統
+
 開啟指令界面，並切換至 python_example 資料夾
 安裝所需套件
+
 pip3 install -r requirements.txt
 
 使用 Flask 啟動服務
