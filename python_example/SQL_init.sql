@@ -11,7 +11,7 @@ CREATE TABLE `Student` (
 INSERT INTO `Student` (`student_id`, `student_name`) VALUES
 ('d1180377', 'Student1'),
 ('d1180378', 'Student2'),
-('d1180379', 'Student3'),;
+('d1180379', 'Student3');
 
 
 CREATE TABLE `Course` (
